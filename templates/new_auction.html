@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ siteName }}{{ name }}</title>
+    <script>
+        function validateForm() {
+            validity = true;
+            var x = document.forms["edit_user"]["name"];
+            if(x == null || x.length() <{{ title_len }}){
+                alert("Name must be filled out");
+                validity = false;
+            }
+            x = document.forms["edit_user"]["description"];
+            if(x == null || x==""){
+                alert("The description is a must. Anything will do.");
+                validity = false;
+            }
+            x = document.forms["edit_user"]["number"];
+            if(x == null || parseInt(x)==0.0){
+                alert("The item has to have a price greater than zero (0) to be auctioned.");
+                validity = false;
+            }
+            x = document.forms["edit_user"]["dateEnd"];
+            if(x == null || x==""){
+                alert("The close time has to be more than 72h.");
+                validity = false;
+            }
+            return validity
+        }
+    </script>
+</head>
+<body>
+    <h1>{{ name }}</h1>
+    <form method="post" name="details" onsubmit="return validateForm()">
+        Title:<br>
+        <input type="text" name="name" title="Minimum length of title: {{ title_len }}"><br>
+        Description:<br>
+         <textarea name="description" rows="5" cols="50"></textarea><br>
+        Price minimum (X.X)€:<br>
+        <input type="text" name="priceMin"><br>
+        Auction closes (dd.mm.yyyy hh:mm:ss):<br>
+        <input type="datetime" name="dateEnd" title="Default is 72h from creation of auction"><br>
+        <input type="submit" value="Create">
+    </form>
+</body>
+</html>
