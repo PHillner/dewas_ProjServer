@@ -3,24 +3,33 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import Template, Context, RequestContext
 from django.template.loader import get_template
 from models import Auction
-from models import User
 
 # Create your views here.
 siteName = "AuctionHouse 9000 - "
 
 
 def home(request):
-    t = get_template(home.html)
-    html = t.render(Context({'siteName': siteName,'name': "Home"}))
+    t = get_template('home.html')
+    html = t.render(Context({'siteName': siteName,'name': "Home",'auctions':Auction.objects.order_by("time").reverse()}))
     return HttpResponse(html)
 
 def login(request):
-    t = get_template(login.html)
+    if request.method == 'POST':
+        username = request.POST.get('username', '')
+        password = request.POST.get('password', '')
+        #nextTo = request.GET.get('next', reverse('home'))
+        #user = auth.authentivate(username=username, password=password)
+
+        #if user is not None and user.is_active:
+        #    auth.login(request, user)
+        #    print user.password
+        #    return HttpResponseRedirect(nextUp)
+    t = get_template('login.html')
     html = t.render(Context({'siteName': siteName,'name': "Login"}))
     return HttpResponse(html)
 
 def register(request):
-    t = get_template(register.html)
+    t = get_template('register.html')
     html = t.render(Context({'siteName': siteName,'name': "Register"}))
     return HttpResponse(html)
 
@@ -28,8 +37,8 @@ def auction(request,id):
     if Auction.exists(id):
         auction = Auction.getById(id)
     else:
-        return None
-    t = get_template(auction.html)
+        return render(request, 'home.html', Context({'siteName': siteName,'name': "Home"}))
+    t = get_template('auction.html')
     html = t.render(Context(
         {'siteName': siteName,'id':auction.id,'name': auction.name,'description': auction.description,
          'priceMin': auction.priceMin,'seller': auction.seller,'due': auction.due})) # TODO add list of 'bets'
@@ -57,7 +66,7 @@ def user(request, id):
         user = User.getById(id)
     else:
         return None
-    t = get_template(user.html)
+    t = get_template('user.html')
     html = get_template(user_edit.html)
 
 
@@ -80,6 +89,6 @@ def user_edit(request):
 
 
 def new_auction(request):
-    t = get_template(new_auction.html)
+    t = get_template('new_auction.html')
     html = t.render(Context({'siteName': siteName,'name': "New auction"}))
     return HttpResponse(html)

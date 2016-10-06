@@ -25,13 +25,13 @@ from AuctionServer.views import user
 from AuctionServer.views import user_edit
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^/$', home),
-    url(r'^login/$', login),
-    url(r'^register/$', register),
-    url(r'^auction/id/(?P<id>\d+)/$', auction),
-    url(r'^auction/id/(?P<id>\d+)/edit/$', auction_edit),
-    url(r'^auction/new/', new_auction),
-    url(r'^user/id/(?P<id>\d+)/$', user),
-    url(r'^user/id/(?P<id>\d+)/edit/$', user_edit),
+    url(r'^admin/?', admin.site.urls),
+    url(r'^/?$', home),
+    url(r'^login/?$', login),
+    url(r'^register/?$', register),
+    url(r'^auction/id/(?P<id>\d+)/?$', auction),
+    url(r'^auction/id/(?P<id>\d+)/edit/?$', auction_edit),
+    url(r'^auction/new/?', new_auction),
+    url(r'^user/id/(?P<id>\d+)/?$', user),
+    url(r'^user/id/(?P<id>\d+)/edit/?$', user_edit),
 ]
