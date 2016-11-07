@@ -1,0 +1,15 @@
+{% extends 'auction.html' %}
+{% block bid_area %}
+    <form method="post" action="/bid/">
+        <table>
+            <tr>
+                <td><b>Bid amount:</b></td>
+                <td><input type="text" name="price"></td>
+            </tr>
+            <tr>
+                <td><input type="submit" value="Bid"></td>
+                <td></td>
+            </tr>
+        </table>
+    </form>
+{% endblock %}

@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'AuctionServer',
 ]
 
+LOGIN_REDIRECT_URL = 'home'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

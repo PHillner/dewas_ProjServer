@@ -86,6 +86,45 @@ def register(request):
             return HttpResponseRedirect('/')
 
 
+@login_required(login_url="/login/")
+def user(request):
+    if request.user.is_authenticated:
+        user_id = request.user.id
+        return render(request, 'user.html', Context({
+            'user': User.objects.get(user_id),
+            'auctions': Auction.objects.filter(seller=user_id).order_by("time").reverse(),
+            'bids': Bid.objects.filter(user_id=user_id).order_by("time").reverse()}))
+    else:
+        messages.add_message(request, messages.ERROR, "User not found.")
+        if request.POST.get("next"):
+            return redirect(request.POST.get("next"))
+        else:
+            return HttpResponseRedirect('/')
+
+
+@login_required(login_url="/login/")
+@csrf_protect
+def user_edit(request):
+    if request.user.is_authenticated:
+        user = User.objects.get(id=request.user.id)
+    else:
+        messages.add_message(request, messages.WARNING, "You can't do that.")
+        # denied(request)
+        if request.POST.get("next") is not None:
+            return redirect(request.POST.get("next"))
+        else:
+            return HttpResponseRedirect('/')
+    if request.method == "POST" and "userName" in request.POST:
+        user.username = request.POST["userName"]
+        user.email = request.POST["email"]
+        if request.POST["password"] != "":
+            user.password = request.POST["password"]
+        user.save()
+        return HttpResponseRedirect('/user/')
+    else:
+        return render_to_response("user_edit.html", Context({'user': user}))
+
+
 def auction(request,id):
     if len(Auction.objects.filter(id=id)) > 0:
         auction = Auction.objects.get(id=id)
@@ -102,66 +141,10 @@ def auction(request,id):
 
 @login_required(login_url="/login/")
 @csrf_protect
-def auction_edit(request, id):
-    if len(Auction.objects.filter(id=id)) > 0:
-        auction = Auction.objects.get(id=id)
-    else:
-        messages.add_message(request, messages.ERROR, "Auction not found.")
-        # denied(request)
-        if request.POST.get("next") is not None:
-            return redirect(request.POST.get("next"))
-        else:
-            return HttpResponseRedirect('/')
-    if request.method == "POST" and "description" in request.POST:
-        auction.description = request.POST["description"]
-        auction.save()
-        return HttpResponseRedirect('/auction/'+auction.id)
-    else:
-        return render(request, "auction_edit.html", Context({'auction': auction}))
-
-
-def user(request, id):
-    if len(User.objects.filter(id=id)) > 0:
-        return render(request, 'user.html', Context({
-            'user': User.objects.get(id=id),
-            'auctions': Auction.objects.filter(seller=id).order_by("time").reverse(),
-            'bids': Bid.objects.filter(user_id=id).order_by("time").reverse()}))
-    else:
-        messages.add_message(request, messages.ERROR, "User not found.")
-        if request.POST.get("next"):
-            return redirect(request.POST.get("next"))
-        else:
-            return HttpResponseRedirect('/')
-
-
-@login_required(login_url="/login/")
-@csrf_protect
-def user_edit(request, id):
-    if len(User.objects.filter(id=id)) > 0:
-        user = User.objects.get(id=id)
-    else:
-        messages.add_message(request, messages.WARNING, "You can't do that.")
-        # denied(request)
-        if request.POST.get("next") is not None:
-            return redirect(request.POST.get("next"))
-        else:
-            return HttpResponseRedirect('/')
-    if request.method == "POST" and "userName" in request.POST:
-        user.username = request.POST["userName"]
-        user.email = request.POST["email"]
-        if request.POST["password"] != "":
-            user.password = request.POST["password"]
-        user.save()
-        return HttpResponseRedirect('/user/'+user.id)
-    else:
-        return render_to_response("user_edit.html", Context({'user': user}))
-
-
-@login_required(login_url="/login/")
-@csrf_protect
 def auction_new(request):
-    if request.method == "POST" and request.user.is_authenticated:
+    if request.method == "POST":
         auction = Auction()
+        auction.seller = request.user
         auction.name = request.POST["name"]
         auction.description = request.POST["description"]
         auction.priceMin = request.POST["priceMin"]
@@ -188,6 +171,33 @@ def auction_delete(request, id):
         return HttpResponseRedirect('/')
     else:
         return render(request, 'auction_delete.html', Context({'auction': Auction.objects.get(id=id)}))
+
+
+@login_required(login_url="/login/")
+@csrf_protect
+def auction_edit(request, id):
+    if request.user.is_authenticated and len(Auction.objects.filter(id=id)) > 0:
+        auction = Auction.objects.get(id=id)
+        if request.user.id is not auction.seller:
+            messages.add_message(request, messages.WARNING, "You can't do that.")
+            # denied(request)
+            if request.POST.get("next") is not None:
+                return redirect(request.POST.get("next"))
+            else:
+                return HttpResponseRedirect('/')
+    else:
+        messages.add_message(request, messages.ERROR, "Auction not found.")
+        # denied(request)
+        if request.POST.get("next") is not None:
+            return redirect(request.POST.get("next"))
+        else:
+            return HttpResponseRedirect('/')
+    if request.method == "POST" and "description" in request.POST:
+        auction.description = request.POST["description"]
+        auction.save()
+        return HttpResponseRedirect('/auction/'+auction.id)
+    else:
+        return render(request, "auction_edit.html", Context({'auction': auction}))
 
 
 def register_context(request):

@@ -1,9 +1,39 @@
 {% extends 'template.html' %}
+{% block functions_scripts %}
+    <script>
+        function validate() {
+            validity = true;
+            var x = document.forms["register"]["userName"];
+            if(x == null || x == "" || x.length() > 30){
+                alert("Username must be filled out and between 0 and 30 (0<x<30) character long");
+                validity = false;
+            }
+            x = document.forms["register"]["email"];
+            if(x == null || x!=""){
+                alert("You need a valid email to be able to have an account.");
+                validity = false;
+            }
+            x = document.forms["register"]["password"];
+            y = document.forms["register"]["password_check"];
+            if(((x != null || x != "") &&(y != null || y != ""))&& x.toString()!=y.toString()){
+                alert("The passwords must match and be other than empty");
+                validity = false;
+                x.value = ""
+                y.value = ""
+            }
+            return validity
+        }
+    </script>
+{% endblock %}
 {% block content %}
 <div id="register">
-    <form method="post" action="/register/">
+    <form method="post" action="/register/" name="register_form">
         {% csrf_token %}
         <table>
+            <tr>
+                <td>Username:</td>
+                <td><input type="text" name="username" value="{{ uname }}"></td>
+            </tr>
             <tr>
                 <td>First name:</td>
                 <td><input type="text" name="first_name" value="{{ fname }}"></td>
@@ -15,10 +45,6 @@
             <tr>
                 <td>Email:</td>
                 <td><input type="text" name="email" value="{{ email }}"></td>
-            </tr>
-            <tr>
-                <td>Username:</td>
-                <td><input type="text" name="username" value="{{ uname }}"></td>
             </tr>
             <tr>
                 <td>Password:</td>

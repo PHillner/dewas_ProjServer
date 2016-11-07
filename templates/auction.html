@@ -1,14 +1,20 @@
+{% extends 'template.html' %}
 {% block content %}
     <div id="auction_info">
         <h1>{{ auction.name }}</h1>
-        Seller: {{ auction.seller }}
+        <small>
+            Seller id: {{ auction.seller }}<br>
+            Time posted: {{ auction.time }}
+        </small>
         <p>Description:<br>
             {{ auction.description }}</p>
-        <p>Base price: {{ auction.priceMin }}</p>
-        <p>Due: {{ auction.due }}</p>
+        <p id="auction"><b>Base price: </b>{{ auction.priceMin }}<br>
+        <b>Due: </b>{{ auction.due }}</p>
     </div>
+    {% block bid_area %}
+    {% endblock %}
     <div id="bids">
-        {% for bid in bids %}
+        {% for bid in auction.bid_set.iterator %}
             <br>
             <div id="bid">
                 <b>Bid amount: </b>{{ bid.price }}<br>
