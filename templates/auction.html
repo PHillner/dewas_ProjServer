@@ -1,20 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ siteName }}{{ name }}</title>
-</head>
-<body>
+{% block content %}
     <div id="auction_info">
-        <h1>{{ name }}</h1>
-        Seller: {{ seller }}
+        <h1>{{ auction.name }}</h1>
+        Seller: {{ auction.seller }}
         <p>Description:<br>
-            {{ description }}</p>
-        <p>Base price: {{ priceMin }}</p>
-        <p>Due: {{ due }}</p>
+            {{ auction.description }}</p>
+        <p>Base price: {{ auction.priceMin }}</p>
+        <p>Due: {{ auction.due }}</p>
     </div>
-    <div id="bets">
-        Here comes the list of bets. Sadly, it now is empty.
+    <div id="bids">
+        {% for bid in bids %}
+            <br>
+            <div id="bid">
+                <b>Bid amount: </b>{{ bid.price }}<br>
+                <b>Time: </b>{{ bid.time }}<br>
+            </div>
+        {% empty %}
+            Here would be the list of bids. Sadly, it now is empty.
+        {% endfor %}
     </div>
-</body>
-</html>
+{% endblock %}

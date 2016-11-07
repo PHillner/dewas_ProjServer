@@ -1,0 +1,52 @@
+{% extends 'template.html' %}
+{% block functions_scripts %}
+    <script>
+        function validateForm() {
+            validity = true;
+            var x = document.forms["edit_user"]["name"];
+            if(x == null || x.length()<50){
+                alert("Name must be filled out and under 50 characters long.");
+                validity = false;
+            }
+            x = document.forms["edit_user"]["description"];
+            if(x == null || x==""){
+                alert("The description is a must. Anything will do.");
+                validity = false;
+            }
+            x = document.forms["edit_user"]["dateEnd"];
+            if(x == null || x=="" || int(x)<72){
+                alert("The close time has to be more than 72h.");
+                validity = false;
+            }
+            return validity
+        }
+    </script>
+{% endblock %}
+{% block content %}
+    <h1>New auction</h1>
+    <form method="post" name="details" onsubmit="return validateForm()">
+    {% csrf_token %}
+        <table>
+            <tr>
+                <td>Title:</td>
+                <td><input type="text" name="name" title="Maximum length is 50 characters"></td>
+            </tr>
+            <tr>
+                <td>Description:</td>
+                <td><textarea name="description" rows="5" cols="50" title="Describe your item(s) here."></textarea></td>
+            </tr>
+            <tr>
+                <td>Price minimum (X.X) EUR:</td>
+                <td><input type="text" name="priceMin"></td>
+            </tr>
+            <tr>
+                <td>Auction closes after (n) hours:</td>
+                <td><input type="datetime" name="dateEnd" title="Default and minimum is 72h from creation of auction"></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="submit" value="Create"></td>
+            </tr>
+        </table>
+    </form>
+{% endblock %}

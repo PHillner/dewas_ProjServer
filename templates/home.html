@@ -1,18 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ siteName }}{{ name }}</title>
-</head>
-<body>
-    <h1>AuctionHouse 9000</h1>
-    <div id="user_box">
-        <?php include_once("user_tools.html") ?>
-    </div>
-    <div id="auction_list">
-        {% if auctions %}
-
-        {% endif %}
-    </div>
-</body>
-</html>
+{% extends 'template.html' %}
+{% block content %}
+{% if request.user.is_authenticated %}
+    <form method="get" action="/auction/new/">
+        <button type="submit">New auction</button>
+    </form>
+{% endif %}
+<div id="auctions">
+    {% for auction in auctions %}
+        <br>
+        <div id="auction">
+            <h2><a href="/auction/{{ auction.id }}">{{ auction.name }}</a></h2>
+            <small>
+                ID: {{ auction.id }}<br>
+                Time: {{ auction.time }}<br>
+            </small>
+            <div id="auction_text">
+                {{ auction.description }}
+            </div>
+        </div>
+    {% empty %}
+        Here would be the list of auctions. Sadly, it now is empty.
+    {% endfor %}
+</div>
+{% endblock %}

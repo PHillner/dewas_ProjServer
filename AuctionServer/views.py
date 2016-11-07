@@ -1,94 +1,204 @@
-from django.shortcuts import render, get_object_or_404, render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
-from django.template import Template, Context, RequestContext
-from django.template.loader import get_template
-from models import Auction
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, render_to_response, redirect
+from django.http import HttpResponseRedirect
+from django.template import Context
+from django.views.decorators.csrf import csrf_protect
+from datetime import datetime, timedelta
+from django.contrib import messages
+from models import Auction, Bid
+from django.contrib.auth import authenticate, login, logout
 
 # Create your views here.
-siteName = "AuctionHouse 9000 - "
+
+
+def update_session_stats(request, page):
+    if "session_start" not in request.session:
+        request.session["session_start"] = datetime.now().strftime('%b %m, %Y, %I:%M %p')
+        request.session["visited"] = 0
+        request.session["created"] = 0
+        request.session["deleted"] = 0
+        request.session["user_id"] = 0
+
+    if page == 'auction':
+        request.session["visited"] += 1
+    elif page == 'auction_new':
+        request.session["created"] += 1
+    elif page == 'auction_delete':
+        request.session["deleted"] += 1
+
+
+def session_stats_reset(request):
+    request.session.flush()
+    update_session_stats(request, request.POST.get("next"))
+    messages.add_message(request, messages.INFO, "Session statistics has been reset.")
+    return redirect(request.POST.get("next"))
 
 
 def home(request):
-    t = get_template('home.html')
-    html = t.render(Context({'siteName': siteName,'name': "Home",'auctions':Auction.objects.order_by("time").reverse()}))
-    return HttpResponse(html)
+    update_session_stats(request, 'home')
+    return render(request, 'home.html', Context({'auctions': Auction.objects.order_by("time").reverse()}))
 
-def login(request):
-    if request.method == 'POST':
-        username = request.POST.get('username', '')
-        password = request.POST.get('password', '')
-        #nextTo = request.GET.get('next', reverse('home'))
-        #user = auth.authentivate(username=username, password=password)
 
-        #if user is not None and user.is_active:
-        #    auth.login(request, user)
-        #    print user.password
-        #    return HttpResponseRedirect(nextUp)
-    t = get_template('login.html')
-    html = t.render(Context({'siteName': siteName,'name': "Login"}))
-    return HttpResponse(html)
-
+@csrf_protect
 def register(request):
-    t = get_template('register.html')
-    html = t.render(Context({'siteName': siteName,'name': "Register"}))
-    return HttpResponse(html)
+    if request.method == "POST" and not request.user.is_authenticated:
+        if str(request.POST['username']) is None or str(request.POST['username']) is ''\
+                or str(request.POST['password']) is None or str(request.POST['password']) is ''\
+                or str(request.POST['password_check']) is None or str(request.POST['password_check']) is '':
+            messages.add_message(request,
+                                 messages.ERROR,
+                                 "You need to fill at least the username and password fields to register.")
+            return render(request, 'register.html', register_context(request))
+        elif str(request.POST['password']) != str(request.POST['password_check']):
+            messages.add_message(request, messages.ERROR, "Passwords must match!")
+            return render(request, 'register.html', register_context(request))
+        else:
+            user = authenticate(username=request.POST.get("username"))
+            if user is not None:
+                messages.add_message(request, messages.ERROR, "Unable to register to given credentials.\n"
+                                                              "Try other username.")
+                return render(request, 'register.html', register_context(request))
+            else:
+                uname = str(request.POST['username'])
+                passw = str(request.POST['password'])
+                user = User.objects.create_user(uname, password=passw)
+                if user is None:
+                    messages.add_message(request, messages.ERROR, "Registration failed.")
+                    return render(request, 'register.html', register_context(request))
+                user.first_name = str(request.POST['first_name'])
+                user.last_name = str(request.POST['last_name'])
+                user.email = str(request.POST['email'])
+                messages.add_message(request, messages.INFO, "Registration successful!")
+                return render(request, 'home.html')
+
+    elif request.method == "GET" and not request.user.is_authenticated:
+        return render(request, 'register.html', Context({'fname': '',
+                                                         'lname': '',
+                                                         'email': '',
+                                                         'uname': ''}))
+    else:
+        messages.add_message(request, messages.WARNING, "You can't do that.")
+        # denied(request)
+        if request.POST.get("next") is not None:
+            return redirect(request.POST.get("next"))
+        else:
+            return HttpResponseRedirect('/')
+
 
 def auction(request,id):
-    if Auction.exists(id):
-        auction = Auction.getById(id)
+    if len(Auction.objects.filter(id=id)) > 0:
+        auction = Auction.objects.get(id=id)
+        update_session_stats(request, 'auction')
     else:
-        return render(request, 'home.html', Context({'siteName': siteName,'name': "Home"}))
-    t = get_template('auction.html')
-    html = t.render(Context(
-        {'siteName': siteName,'id':auction.id,'name': auction.name,'description': auction.description,
-         'priceMin': auction.priceMin,'seller': auction.seller,'due': auction.due})) # TODO add list of 'bets'
-    return HttpResponse(html)
+        messages.add_message(request, messages.ERROR, "Auction not found.")
+        # denied(request)
+        if request.POST.get("next") is not None:
+            return redirect(request.POST.get("next"))
+        else:
+            return HttpResponseRedirect('/')
+    return render(request, 'auction.html', Context({'auction': auction}))
 
 
-def auction_edit(request):
-    if Auction.exists(id):
-        auction = Auction.getById(id)
+@login_required(login_url="/login/")
+@csrf_protect
+def auction_edit(request, id):
+    if len(Auction.objects.filter(id=id)) > 0:
+        auction = Auction.objects.get(id=id)
     else:
-        return None
-
-    if request.method == "POST" and request.POST.has_key("description"):
+        messages.add_message(request, messages.ERROR, "Auction not found.")
+        # denied(request)
+        if request.POST.get("next") is not None:
+            return redirect(request.POST.get("next"))
+        else:
+            return HttpResponseRedirect('/')
+    if request.method == "POST" and "description" in request.POST:
         auction.description = request.POST["description"]
         auction.save()
         return HttpResponseRedirect('/auction/'+auction.id)
     else:
-        return render_to_response("auction_edit.html",
-                    {'siteName': siteName,'name': auction.name,'description': auction.description},
-                                  context_instance = RequestContext(request))
+        return render(request, "auction_edit.html", Context({'auction': auction}))
 
 
 def user(request, id):
-    if User.exists(id):
-        user = User.getById(id)
+    if len(User.objects.filter(id=id)) > 0:
+        return render(request, 'user.html', Context({
+            'user': User.objects.get(id=id),
+            'auctions': Auction.objects.filter(seller=id).order_by("time").reverse(),
+            'bids': Bid.objects.filter(user_id=id).order_by("time").reverse()}))
     else:
-        return None
-    t = get_template('user.html')
-    html = get_template(user_edit.html)
+        messages.add_message(request, messages.ERROR, "User not found.")
+        if request.POST.get("next"):
+            return redirect(request.POST.get("next"))
+        else:
+            return HttpResponseRedirect('/')
 
 
-def user_edit(request):
-    if User.exists(id):
-        user = Auction.getById(id)
+@login_required(login_url="/login/")
+@csrf_protect
+def user_edit(request, id):
+    if len(User.objects.filter(id=id)) > 0:
+        user = User.objects.get(id=id)
     else:
-        return None
-
-    if request.method == "POST" and request.POST.has_key("userName"):
-        user.userName = request.POST["userName"]
+        messages.add_message(request, messages.WARNING, "You can't do that.")
+        # denied(request)
+        if request.POST.get("next") is not None:
+            return redirect(request.POST.get("next"))
+        else:
+            return HttpResponseRedirect('/')
+    if request.method == "POST" and "userName" in request.POST:
+        user.username = request.POST["userName"]
         user.email = request.POST["email"]
-        user.password = request.POST["password"]
+        if request.POST["password"] != "":
+            user.password = request.POST["password"]
         user.save()
-        return HttpResponseRedirect('/auction/'+user.id)
+        return HttpResponseRedirect('/user/'+user.id)
     else:
-        return render_to_response("auction_edit.html",
-                                  {'siteName': siteName,'name': "User",'userName': user.userName},
-                                  context_instance = RequestContext(request))
+        return render_to_response("user_edit.html", Context({'user': user}))
 
 
-def new_auction(request):
-    t = get_template('new_auction.html')
-    html = t.render(Context({'siteName': siteName,'name': "New auction"}))
-    return HttpResponse(html)
+@login_required(login_url="/login/")
+@csrf_protect
+def auction_new(request):
+    if request.method == "POST" and request.user.is_authenticated:
+        auction = Auction()
+        auction.name = request.POST["name"]
+        auction.description = request.POST["description"]
+        auction.priceMin = request.POST["priceMin"]
+        auction.time = datetime.now()
+        auction.due = datetime.now() + timedelta(hours=int(request.POST["dateEnd"]))
+        auction.save()
+        update_session_stats(request, 'auction_new')
+        messages.add_message(request, messages.SUCCESS, "Auction created")
+        return HttpResponseRedirect('/')
+    else:
+        return render(request, "auction_new.html")
+
+
+@login_required(login_url="/login/")
+@csrf_protect
+def auction_delete(request, id):
+    if request.method == "POST"\
+            and request.POST.get("choice1")\
+            and request.user.id == Auction.objects.get(id=id).seller:
+        auction = Auction.objects.get(id=id)
+        auction.delete()
+        update_session_stats(request, 'auction_delete')
+        messages.add_message(request, messages.SUCCESS, "Blog post removed")
+        return HttpResponseRedirect('/')
+    else:
+        return render(request, 'auction_delete.html', Context({'auction': Auction.objects.get(id=id)}))
+
+
+def register_context(request):
+    return Context({'fname': str(request.POST['first_name']),
+                    'lname': str(request.POST['last_name']),
+                    'email': str(request.POST['email']),
+                    'uname': str(request.POST['username'])})
+
+
+def denied(request):
+    if request.POST.get("next") is not None:
+        return redirect(request.POST.get("next"))
+    else:
+        return HttpResponseRedirect('/')

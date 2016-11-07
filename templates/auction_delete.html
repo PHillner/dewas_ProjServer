@@ -1,0 +1,9 @@
+{% extends 'template.html' %}
+{% block content %}
+<h2>Delete blogpost</h2>
+<form method="post" action="/auction/{{ auction.id }}/delete/">
+    {% csrf_token %}
+    Are you sure you want to delete this auction (id: {{ auction.id }})?<br>
+    <input type="submit" name="choice1" value="Yes"><input type="submit" name="choice2" value="No">
+</form>
+{% endblock %}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Auction House 9000</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    {% block functions_scripts %}
+    {% endblock %}
+</head>
+<body>
+    <header id="top">
+        <h1><a href="/">Auction House 9000</a></h1>
+        <div id="login_out_reg">
+            {% if request.user.is_authenticated %}
+                <a href="/user/{{ request.user.id }}">Profile.</a><br>
+                <a href="/logout/">Logout.</a>
+            {% else %}
+                <a href="/login/">Login</a> or <a href="/register/">Register.</a>
+            {% endif %}
+        </div>
+    </header>
+    <div id="info">
+        {% if messages %}
+            {% for msg in messages %}
+                <li>{{ msg }}</li>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <div id="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+    <footer id="bottom">
+        <br>
+        <div id="stats">
+            <table>
+                <tr>
+                    <td><b>Session start date:</b></td>
+                    <td>{{ request.session.session_start }}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><b>Auctions visited:</b></td>
+                    <td>{{ request.session.visited }}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><b>Auctions created:</b></td>
+                    <td>{{ request.session.created }}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><b>Auctions deleted:</b></td>
+                    <td>{{ request.session.deleted }}</td>
+                    <td><form method="post" action="/session_stats_reset/">
+                        {% csrf_token %}
+                        <input type="submit" value="Reset stats">
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                    </form></td>
+                </tr>
+            </table>
+        </div>
+    </footer>
+</body>
+</html>

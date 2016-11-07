@@ -1,0 +1,41 @@
+#auction {
+    border: solid;
+    border-width: thin;
+    border-color: dimgrey;
+    min-width: 415px;
+    width: 22.5%;
+}
+
+#bids {
+    border: solid;
+    border-width: thin;
+    border-color: dimgrey;
+    min-width: 415px;
+    width: 22.5%;
+}
+
+#bid {
+    border: solid;
+    border-width: thin;
+    border-color: dimgrey;
+    min-width: 415px;
+    width: 22.5%;
+}
+
+small {
+    color: grey;
+}
+
+#stats {
+    border: solid;
+    border-width: thin;
+    border-color: dimgrey;
+    min-width: 415px;
+    width: 22.5%;
+}
+
+#archive td {
+    border: solid;
+    border-width: thin;
+    border-color: dimgrey;
+}

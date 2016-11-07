@@ -1,17 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ siteName }}{{ name }}</title>
-</head>
-<body>
+{% extends 'template.html' %}
+{% block content %}
     <h1>User details</h1>
-    <p>ID: {{ id }}</p>
-    <p>Name: {{ userName }}</p>
-    <p>E-mail: {{ email }}</p>
-    <input type="button" name="edit" value="Edit" onclick="user_edit.html"> <!-- fix btn -->
-    <div id="bid_list">
-        <!-- list of bids made by user -->
+    ID: {{ user.id }}<br>
+    Username: {{ user.username }}<br>
+    E-mail: {{ user.email }}<br>
+    First name: {{ user.first_name }}<br>
+    Last name: {{ user.last_name }}<br>
+    <form method="get" action="/user/{{ user.id }}/edit">
+        <input type="hidden" name="id" value="{{ user.id }}">
+        <input type="submit" name="edit" value="Edit">
+    </form>
+    <br>
+    <div id="auctions">
+    {% for auction in auctions %}
+        <br>
+        <div id="auction">
+            <h2><a href="/auction/{{ auction.id }}">{{ auction.name }}</a></h2>
+            <small>
+                ID: {{ auction.id }}<br>
+                Time: {{ auction.time }}<br>
+            </small>
+            <div id="auction_text">
+                {{ auction.description }}
+            </div>
+        </div>
+    {% empty %}
+        Here would be the list of auctions. Sadly, it now is empty.
+    {% endfor %}
+</div>
+    <br>
+    <div id="bids">
+        {% for bid in bids %}
+            <br>
+            <div id="bid">
+                <b>Bid amount: </b>{{ bid.price }}<br>
+                <b>Time: </b>{{ bid.time }}<br>
+            </div>
+        {% empty %}
+            Here would be the list of bids. Sadly, it now is empty.
+        {% endfor %}
     </div>
-</body>
-</html>
+{% endblock %}

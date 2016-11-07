@@ -15,23 +15,21 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from AuctionServer.views import home
-from AuctionServer.views import login
-from AuctionServer.views import register
-from AuctionServer.views import auction
-from AuctionServer.views import auction_edit
-from AuctionServer.views import new_auction
-from AuctionServer.views import user
-from AuctionServer.views import user_edit
+from django.contrib.auth import views as auth_views
+from AuctionServer.views import *
 
 urlpatterns = [
     url(r'^admin/?', admin.site.urls),
-    url(r'^/?$', home),
-    url(r'^login/?$', login),
-    url(r'^register/?$', register),
-    url(r'^auction/id/(?P<id>\d+)/?$', auction),
-    url(r'^auction/id/(?P<id>\d+)/edit/?$', auction_edit),
-    url(r'^auction/new/?', new_auction),
-    url(r'^user/id/(?P<id>\d+)/?$', user),
-    url(r'^user/id/(?P<id>\d+)/edit/?$', user_edit),
+    url(r'^$', home),
+    #url(r'^login/?$', login),
+    #url(r'^register/?$', register),
+    url(r'^auction/(?P<id>\d+)/?$', auction),
+    url(r'^auction/new/?', auction_new),
+    url(r'^auction/(?P<id>\d+)/edit/?$', auction_edit),
+    url(r'^auction/(?P<id>\d+)/delete/?$', auction_delete),
+    url(r'^user/(?P<id>\d+)/?$', user),
+    url(r'^user/(?P<id>\d+)/edit/?$', user_edit),
+    url(r'^login/$', auth_views.login, name='login'),
+    url(r'^logout/$', auth_views.logout, name='logout'),
+    url(r'^session_stats_reset/$', session_stats_reset),
 ]
