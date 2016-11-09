@@ -1,35 +1,7 @@
-{% block functions_scripts %}
-    <script>
-        function validate() {
-            validity = true;
-            var x = document.forms["edit_user"]["userName"];
-            if(x == null || x == "" || x.length() > 30){
-                alert("Username must be filled out and between 0 and 30 (0<x<30) character long");
-                validity = false;
-            }
-            x = document.forms["edit_user"]["email"];
-            if(x == null || x!=""){
-                alert("You need a valid email to be able to have an account.");
-                validity = false;
-            }
-            x = document.forms["edit_user"]["password"];
-            y = document.forms["edit_user"]["password_check"];
-            if(((x != null || x != "") &&(y != null || y != ""))&& x.toString()!=y.toString()){
-                alert("The passwords must match and be other than empty");
-                validity = false;
-            }
-            return validity
-        }
-    </script>
-{% endblock %}
 {% block content %}
     <h1> Edit user details</h1>
     <form name="edit_user" method="post">
     <table>
-        <tr>
-            <td>Username:</td>
-            <td><input type="text" name="userName" value="{{ user.username }}"></td>
-        </tr>
         <tr>
             <td>Email:</td>
             <td><input type="text" name="email" value="{{ user.email }}"></td>

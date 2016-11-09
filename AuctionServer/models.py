@@ -14,6 +14,7 @@ class Auction(models.Model):
     priceMin = models.FloatField()
     time = models.DateTimeField()
     due = models.DateTimeField()
+    a_hash = models.TextField()
 
 
 class Bid(models.Model):

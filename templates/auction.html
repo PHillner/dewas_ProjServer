@@ -11,6 +11,24 @@
         <p id="auction"><b>Base price: </b>{{ auction.priceMin }}<br>
         <b>Due: </b>{{ auction.due }}</p>
     </div>
+    {% if request.user.is_authenticated and request.user == auction.seller %}
+        <table>
+            <tr>
+                <td>
+                    <form method="get" action="/auction/{{ auction.id }}/edit/">
+                        <button type="submit">Edit auction</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="get" action="/auction/{{ auction.id }}/delete/">
+                        <button type="submit">Delete auction</button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+
+    {% endif %}
+    <br>
     {% if request.user.is_authenticated and request.user != auction.seller %}
     <form method="post" action="/bid/{{ auction.id }}/">
         {% csrf_token %}

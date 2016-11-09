@@ -9,6 +9,8 @@ from django.contrib import messages
 from models import Auction, Bid
 from django.contrib.auth import authenticate, login, logout
 
+salt = "brumm"
+
 # Create your views here.
 
 
@@ -90,9 +92,9 @@ def user(request):
     if request.user.is_authenticated:
         user_id = request.user.id
         return render(request, 'user.html', Context({
-            'user': User.objects.get(user_id),
+            'user': User.objects.get(id=user_id),
             'auctions': Auction.objects.filter(seller=user_id).order_by("time").reverse(),
-            'bids': Bid.objects.filter(user_id=user_id).order_by("time").reverse()}))
+            'bids': Bid.objects.filter(bidder_id=user_id).order_by("time").reverse()}))
     else:
         messages.add_message(request, messages.ERROR, "User not found.")
         if request.POST.get("next"):
@@ -123,7 +125,7 @@ def user_edit(request):
         return render_to_response("user_edit.html", Context({'user': user}))
 
 
-def auction(request,id):
+def auction(request, id):
     if len(Auction.objects.filter(id=id)) > 0:
         auction = Auction.objects.get(id=id)
         update_session_stats(request, 'auction')
@@ -146,11 +148,16 @@ def auction_new(request):
         auction.description = request.POST["description"]
         auction.priceMin = request.POST["priceMin"]
         auction.time = datetime.now()
-        auction.due = datetime.now() + timedelta(hours=int(request.POST["dateEnd"]))
+        delta = int(request.POST["dateEnd"])
+        if delta < 72:
+            messages.add_message(request, messages.ERROR, "Auction due time must be at least 72 hours in the future.")
+            return render(request, "auction_new.html", Context({'auction': auction}))
+        auction.due = datetime.now() + timedelta(hours=delta)
+        auction.a_hash = hash(auction.name + auction.description + str(auction.due) + auction.priceMin + salt)
         auction.save()
         update_session_stats(request, 'auction_new')
         messages.add_message(request, messages.SUCCESS, "Auction created")
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/auction/'+str(auction.id)+'/')
     else:
         return render(request, "auction_new.html")
 
@@ -188,15 +195,34 @@ def auction_edit(request, id):
         else:
             return HttpResponseRedirect('/')
     if request.method == "POST" and "description" in request.POST:
+        auction.name = request.POST["name"]
         auction.description = request.POST["description"]
+        if len(Bid.objects.filter(auction_id=id)) > 0:
+            auction.a_hash = hash(auction.name + auction.description + str(auction.due) +\
+                             Bid.objects.filter(auction_id=id).order_by("price") + salt)
+        else:
+            auction.a_hash = hash(auction.name + auction.description + str(auction.due) + auction.priceMin + salt)
         auction.save()
         return HttpResponseRedirect('/auction/'+auction.id)
     else:
         return render(request, "auction_edit.html",
-                      Context({'auction': auction, 'bids':Bid.objects.filter(auction_id=auction.id)}))
+                      Context({'auction': auction, 'bids': Bid.objects.filter(auction_id=id)}))
+
 
 def bid(request, id):
-    if len(Auction.objects.filter(id=id)) > 0 and request.user is not Auction.objects.get(id=id).seller:
+    if request.method == "POST"\
+            and len(Auction.objects.filter(id=id)) > 0\
+            and request.user is not Auction.objects.get(id=id).seller:
+        auction = Auction.objects.get(id=id)
+        bid = Bid()
+        bid.auction_id = auction
+        bid.bidder_id = request.user
+        bid.price = request.POST["price"]
+        bid.time = datetime.now()
+        bid.save()
+        auction.a_hash = hash(auction.name + auction.description + str(auction.due) + \
+                         str(Bid.objects.filter(auction_id=id).order_by("price").first().price) + salt)
+        auction.save()
         messages.add_message(request, messages.INFO, "Bid created")
         return redirect(request.POST.get("next"))
 

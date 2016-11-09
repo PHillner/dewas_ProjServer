@@ -1,10 +1,5 @@
 {% extends 'template.html' %}
 {% block content %}
-{% if request.user.is_authenticated %}
-    <form method="get" action="/auction/new/">
-        <button type="submit">New auction</button>
-    </form>
-{% endif %}
 <div id="auctions">
     {% for auction in auctions %}
         <br>

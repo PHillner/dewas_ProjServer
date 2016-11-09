@@ -34,15 +34,15 @@
         <table>
             <tr>
                 <td>Title:</td>
-                <td><input type="text" name="name" title="Maximum length is 50 characters"></td>
+                <td><input type="text" name="name" title="Maximum length is 50 characters" value="{{ auction.name }}"></td>
             </tr>
             <tr>
                 <td>Description:</td>
-                <td><textarea name="description" rows="5" cols="50" title="Describe your item(s) here."></textarea></td>
+                <td><textarea name="description" rows="5" cols="50" title="Describe your item(s) here.">{{ auction.description }}</textarea></td>
             </tr>
             <tr>
                 <td>Price minimum (X.X) EUR:</td>
-                <td><input type="text" name="priceMin"></td>
+                <td><input type="text" name="priceMin" value="{{ auction.priceMin }}"></td>
             </tr>
             <tr>
                 <td>Auction closes after (n) hours:</td>

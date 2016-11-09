@@ -6,7 +6,7 @@
     E-mail: {{ user.email }}<br>
     First name: {{ user.first_name }}<br>
     Last name: {{ user.last_name }}<br>
-    <form method="get" action="/user/{{ user.id }}/edit">
+    <form method="get" action="/user/edit/">
         <input type="hidden" name="id" value="{{ user.id }}">
         <input type="submit" name="edit" value="Edit">
     </form>

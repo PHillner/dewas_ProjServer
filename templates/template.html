@@ -5,20 +5,23 @@
     <meta charset="UTF-8">
     <title>Auction House 9000</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-    {% block functions_scripts %}
-    {% endblock %}
 </head>
 <body>
     <header id="top">
         <h1><a href="/">Auction House 9000</a></h1>
         <div id="login_out_reg">
             {% if request.user.is_authenticated %}
-                <a href="/user/">Profile.</a><br>
-                <a href="/logout/">Logout.</a>
+                <p><b>{{ request.user.username }}</b></p>
+                <a href="/user/">Profile</a> or <a href="/logout/">logout.</a>
             {% else %}
                 <a href="/login/">Login</a> or <a href="/register/">Register.</a>
             {% endif %}
         </div>
+        {% if request.user.is_authenticated %}
+            <form method="get" action="/auction/new/">
+                <button type="submit">New auction</button>
+            </form>
+        {% endif %}
     </header>
     <div id="info">
         {% if messages %}
