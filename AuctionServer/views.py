@@ -197,7 +197,13 @@ def auction_edit(request, id):
         auction.save()
         return HttpResponseRedirect('/auction/'+auction.id)
     else:
-        return render(request, "auction_edit.html", Context({'auction': auction}))
+        return render(request, "auction_edit.html",
+                      Context({'auction': auction, 'bids':Bid.objects.filter(auction_id=auction.id)}))
+
+def bid(request, id):
+    if len(Auction.objects.filter(id=id)) > 0 and request.user is not Auction.objects.get(id=id).seller:
+        messages.add_message(request, messages.INFO, "Bid created")
+        return redirect(request.POST.get("next"))
 
 
 def register_context(request):

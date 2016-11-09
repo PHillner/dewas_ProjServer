@@ -11,10 +11,23 @@
         <p id="auction"><b>Base price: </b>{{ auction.priceMin }}<br>
         <b>Due: </b>{{ auction.due }}</p>
     </div>
-    {% block bid_area %}
-    {% endblock %}
+    {% if request.user.is_authenticated and request.user != auction.seller %}
+    <form method="post" action="/bid/{{ auction.id }}/">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td><b>Bid amount:</b></td>
+                <td><input type="text" name="price"></td>
+            </tr>
+            <tr>
+                <td><input type="submit" value="Bid"></td>
+                <td><input type="hidden" name="next" value="/auction/{{ auction.id }}/"></td>
+            </tr>
+        </table>
+    </form>
+    {% endif %}
     <div id="bids">
-        {% for bid in auction.bid_set.iterator %}
+        {% for bid in bids %}
             <br>
             <div id="bid">
                 <b>Bid amount: </b>{{ bid.price }}<br>
