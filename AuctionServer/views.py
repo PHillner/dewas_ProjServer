@@ -79,7 +79,6 @@ def register(request):
                                                          'uname': ''}))
     else:
         messages.add_message(request, messages.WARNING, "You can't do that.")
-        # denied(request)
         if request.POST.get("next") is not None:
             return redirect(request.POST.get("next"))
         else:
@@ -109,7 +108,6 @@ def user_edit(request):
         user = User.objects.get(id=request.user.id)
     else:
         messages.add_message(request, messages.WARNING, "You can't do that.")
-        # denied(request)
         if request.POST.get("next") is not None:
             return redirect(request.POST.get("next"))
         else:
@@ -131,7 +129,6 @@ def auction(request,id):
         update_session_stats(request, 'auction')
     else:
         messages.add_message(request, messages.ERROR, "Auction not found.")
-        # denied(request)
         if request.POST.get("next") is not None:
             return redirect(request.POST.get("next"))
         else:
@@ -180,14 +177,12 @@ def auction_edit(request, id):
         auction = Auction.objects.get(id=id)
         if request.user.id is not auction.seller:
             messages.add_message(request, messages.WARNING, "You can't do that.")
-            # denied(request)
             if request.POST.get("next") is not None:
                 return redirect(request.POST.get("next"))
             else:
                 return HttpResponseRedirect('/')
     else:
         messages.add_message(request, messages.ERROR, "Auction not found.")
-        # denied(request)
         if request.POST.get("next") is not None:
             return redirect(request.POST.get("next"))
         else:
@@ -211,10 +206,3 @@ def register_context(request):
                     'lname': str(request.POST['last_name']),
                     'email': str(request.POST['email']),
                     'uname': str(request.POST['username'])})
-
-
-def denied(request):
-    if request.POST.get("next") is not None:
-        return redirect(request.POST.get("next"))
-    else:
-        return HttpResponseRedirect('/')
