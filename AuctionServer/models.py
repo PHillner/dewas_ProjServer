@@ -18,7 +18,7 @@ class Auction(models.Model):
 
 
 class Bid(models.Model):
-    auction_id = models.ForeignKey(Auction,on_delete=models.CASCADE)
-    bidder_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    bidder = models.ForeignKey(User, on_delete=models.CASCADE)
     price = models.FloatField()
     time = models.DateTimeField()

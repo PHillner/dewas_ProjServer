@@ -33,6 +33,7 @@
         {% for bid in bids %}
             <br>
             <div id="bid">
+                <b><a href="/auction/{{ auction.id }}">{{ auction.name }}</a></b>
                 <b>Bid amount: </b>{{ bid.price }}<br>
                 <b>Time: </b>{{ bid.time }}<br>
             </div>

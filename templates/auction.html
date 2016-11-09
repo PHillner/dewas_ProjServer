@@ -3,7 +3,7 @@
     <div id="auction_info">
         <h1>{{ auction.name }}</h1>
         <small>
-            Seller id: {{ auction.seller }}<br>
+            Seller id: {{ auction.seller.id }}<br>
             Time posted: {{ auction.time }}
         </small>
         <p>Description:<br>
@@ -26,7 +26,6 @@
                 </td>
             </tr>
         </table>
-
     {% endif %}
     <br>
     {% if request.user.is_authenticated and request.user != auction.seller %}
@@ -34,10 +33,8 @@
         {% csrf_token %}
         <table>
             <tr>
-                <td><b>Bid amount:</b></td>
+                <td><b>Amount to bid:</b></td>
                 <td><input type="text" name="price"></td>
-            </tr>
-            <tr>
                 <td><input type="submit" value="Bid"></td>
                 <td><input type="hidden" name="next" value="/auction/{{ auction.id }}/"></td>
             </tr>
@@ -46,7 +43,9 @@
     {% endif %}
     <div id="bids">
         {% for bid in bids %}
+            {% if not forloop.first %}
             <br>
+            {% endif %}
             <div id="bid">
                 <b>Bid amount: </b>{{ bid.price }}<br>
                 <b>Time: </b>{{ bid.time }}<br>

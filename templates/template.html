@@ -11,7 +11,7 @@
         <h1><a href="/">Auction House 9000</a></h1>
         <div id="login_out_reg">
             {% if request.user.is_authenticated %}
-                <p><b>{{ request.user.username }}</b></p>
+                <p><b>User: </b>{{ request.user.username }}</p>
                 <a href="/user/">Profile</a> or <a href="/logout/">logout.</a>
             {% else %}
                 <a href="/login/">Login</a> or <a href="/register/">Register.</a>

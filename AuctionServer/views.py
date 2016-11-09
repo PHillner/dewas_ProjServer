@@ -94,7 +94,7 @@ def user(request):
         return render(request, 'user.html', Context({
             'user': User.objects.get(id=user_id),
             'auctions': Auction.objects.filter(seller=user_id).order_by("time").reverse(),
-            'bids': Bid.objects.filter(bidder_id=user_id).order_by("time").reverse()}))
+            'bids': Bid.objects.filter(bidder=user_id).order_by("time").reverse()}))
     else:
         messages.add_message(request, messages.ERROR, "User not found.")
         if request.POST.get("next"):
@@ -135,7 +135,7 @@ def auction(request, id):
             return redirect(request.POST.get("next"))
         else:
             return HttpResponseRedirect('/')
-    return render(request, 'auction.html', Context({'auction': auction}))
+    return render(request, 'auction.html', Context({'auction': auction, 'bids': Bid.objects.filter(auction=auction).order_by("time").reverse()}))
 
 
 @login_required(login_url="/login/")
@@ -215,16 +215,29 @@ def bid(request, id):
             and request.user is not Auction.objects.get(id=id).seller:
         auction = Auction.objects.get(id=id)
         bid = Bid()
-        bid.auction_id = auction
-        bid.bidder_id = request.user
-        bid.price = request.POST["price"]
+        bid.auction = auction
+        bid.bidder = request.user
+        price = float(request.POST["price"])
+        bids = Bid.objects.filter(auction_id=auction).order_by("price")
+        if len(bids) > 0 and price > bids.last():
+            bid.price = price
+        elif price > auction.priceMin:
+            bid.price = price
+        else:
+            messages.add_message(request,messages.ERROR,
+                             "The bid must exceed the minimum price or the highest bid by 0.01, whichever is higher.")
+            if request.POST.get("next") is not None:
+                return redirect(request.POST.get("next"))
+            else:
+                return HttpResponseRedirect('/auction/'+id+'/')
         bid.time = datetime.now()
         bid.save()
         auction.a_hash = hash(auction.name + auction.description + str(auction.due) + \
-                         str(Bid.objects.filter(auction_id=id).order_by("price").first().price) + salt)
+                              str(Bid.objects.filter(auction_id=id).order_by("price").first().price) + salt)
         auction.save()
         messages.add_message(request, messages.INFO, "Bid created")
         return redirect(request.POST.get("next"))
+
 
 
 def register_context(request):
