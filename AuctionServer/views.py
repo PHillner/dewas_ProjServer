@@ -232,6 +232,8 @@ def auction_edit(request, id):
                       {'auction': auction, 'bids': Bid.objects.filter(auction_id=id)})
 
 
+@login_required(login_url="/login/")
+@csrf_protect
 def ban(request, id):
     if not Auction.objects.get(id=id).resolved\
             and request.method == "POST"\
@@ -251,6 +253,9 @@ def ban(request, id):
         return render(request, 'auction_ban.html', {'auction': Auction.objects.get(id=id)})
 
 
+
+@login_required(login_url="/login/")
+@csrf_protect
 def bid(request, id):
     if request.method == "POST"\
                 and len(Auction.objects.filter(id=id)) > 0\
@@ -300,7 +305,7 @@ def bid(request, id):
 
 
 def search(request):
-    if request.method == "POST" and request.POST["search_menu"] is not "" and len(Auction.objects.filter(id=id)) > 0:
+    if request.method == "POST" and request.POST["search_menu"] is not "" and len(Auction.objects.all()) > 0:
         if request.POST["search_menu"] == "name":
             auction = Auction.objects.filter(name__contains=request.POST["search_variable"])\
                 .order_by("time").reverse()
@@ -313,6 +318,8 @@ def search(request):
         elif request.POST["search_menu"] == "below":
             auction = Auction.objects.filter(priceMin__lt=Decimal(request.POST["search_variable"]))\
                 .order_by("time").reverse()
+        if not len(auction) > 0:
+            messages.add_message(request, messages.INFO, "Sorry, no auctions found.")
         return render(request, "search.html", {'results': auction, 'search_variable': request.POST["search_variable"]})
     else:
         return render(request, "search.html")
