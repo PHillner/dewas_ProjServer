@@ -2,12 +2,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, render_to_response, redirect
 from django.http import HttpResponseRedirect
-from django.template import Context
 from django.views.decorators.csrf import csrf_protect
 from datetime import datetime, timedelta
 from django.contrib import messages
 from models import Auction, Bid
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate
 from decimal import *
 from background_task import background
 
@@ -37,7 +36,7 @@ def update_session_stats(request, page):
 def session_stats_reset(request):
     request.session.flush()
     update_session_stats(request, request.POST.get("next"))
-    messages.add_message(request, messages.INFO, "Session statistics has been reset.")
+    messages.add_message(request, messages.INFO, "Session has been reset.")
     return redirect(request.POST.get("next"))
 
 
