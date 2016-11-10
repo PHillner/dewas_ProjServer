@@ -158,8 +158,11 @@ def auction_new(request):
         delta = int(request.POST["dateEnd"])
         auction.due = datetime.now() + timedelta(hours=delta)
         auction.a_hash = hash(auction.name + auction.description + str(auction.due) + str(auction.priceMin) + salt)
+        auction.banned = False
+        auction.resolved = False
+        # if request.user.email is not "" and request.user.email is not None:
+            # auction.confirmation_email()
         auction.save()
-        auction.confirmation_email()
         update_session_stats(request, 'auction_new')
         messages.add_message(request, messages.SUCCESS, "Auction created")
         return HttpResponseRedirect('/auction/'+str(auction.id)+'/')
@@ -170,7 +173,7 @@ def auction_new(request):
         auction.priceMin = Decimal(request.POST["priceMin"])
         delta = int(request.POST["dateEnd"])
 
-        if auction.priceMin.as_tuple().exponent == -2:
+        if auction.priceMin.as_tuple().exponent < -2:
             messages.add_message(request, messages.ERROR, "You have to give the starting price with 2 decimals.")
 
         if delta < 72:
@@ -179,8 +182,7 @@ def auction_new(request):
         if len(messages.get_messages(request)) > 0:
             return render(request, "auction_new.html", {'auction': auction})
 
-        auction.due = datetime.now() + timedelta(hours=delta)
-        return render(request, "auction_new_confirm.html", {'auction': auction})
+        return render(request, "auction_new_confirm.html", {'auction': auction, 'due': delta})
     else:
         return render(request, "auction_new.html")
 
@@ -269,7 +271,7 @@ def bid(request, id):
         bid.bidder = request.user
         price = Decimal(request.POST["price"])
         bids = Bid.objects.filter(auction_id=auction).order_by("price")
-        if bids.last().bidder.id is request.user.id:
+        if len(bids) > 0 and bids.last().bidder.id is request.user.id:
             messages.add_message(request, messages.ERROR,
                                  "You already have the highest bid!")
             if request.POST.get("next") is not None:
@@ -299,6 +301,7 @@ def bid(request, id):
         auction.a_hash = hash(auction.name + auction.description + str(auction.due) +
                               str(Bid.objects.filter(auction_id=id).order_by("price").first().price) + salt)
         auction.save()
+        # auction.new_bid_notify()
         update_session_stats(request, "bid")
         messages.add_message(request, messages.INFO, "Bid created")
         return redirect(request.POST.get("next"))

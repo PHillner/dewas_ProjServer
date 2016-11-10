@@ -20,7 +20,7 @@ class Auction(models.Model):
 
     def confirmation_email(self):
         send_mail('Your auction has been created.',
-                  'Your auction "' + self.name + '" (id: ' + self.id + ') has been created.',
+                  'Your auction "' + self.name + '" (id: ' + str(self.id) + ') has been created.',
                   'phillner@abo.fi',
                   [self.seller.email],
                   fail_silently=False)
@@ -41,8 +41,7 @@ class Auction(models.Model):
                       fail_silently=False)
         else:
             send_mail('Your auction has ended without a buyer.',
-                      'Your auction "' + self.name + '" (id: ' + self.id + ') has ended without finding a buyer.\n'
-                                   '',
+                      'Your auction "' + self.name + '" (id: ' + self.id + ') has ended without finding a buyer.\n',
                       'phillner@abo.fi',
                       [self.seller.email],
                       fail_silently=False)
@@ -68,6 +67,23 @@ class Auction(models.Model):
                               'phillner@abo.fi',
                               [bidder.email],
                               fail_silently=False)
+
+    def new_bid_notify(self):
+        bids = Bid.objects.filter(auction=self.id).order_by("price")
+        if len(bids) > 0:
+            for bid in bids:
+                send_mail('An auction you have bid on has a new top.',
+                          'An auction you have bid on "' + self.name + '" (id: ' + self.id +
+                          ') has a new bid of ' + str(bids.last().price) + ' EUR.\n',
+                          'phillner@abo.fi',
+                          [self.seller.email],
+                          fail_silently=False)
+
+        send_mail('Your auction has a new bid.',
+                  'Your auction "' + self.name + '" (id: ' + self.id + ') has a new bid of '+str(bids.last().price)+' EUR.\n',
+                  'phillner@abo.fi',
+                  [self.seller.email],
+                  fail_silently=False)
 
 
 class Bid(models.Model):
