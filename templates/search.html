@@ -1,19 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-</head>
-<body>
-    <form>
+{% extends 'template.html' %}
+{% block content %}
+    <form method="post" action="/search/">
+    {% csrf_token %}
         <select name="search_menu">
-            <option value="1">name</option>
-            <option value="2">description</option>
-            <option value="3">price above</option>
-            <option value="4">price below</option>
+            <option value="name">Name includes</option>
+            <option value="desc">Description includes</option>
+            <option value="above">Start price above</option>
+            <option value="below">Start price below</option>
         </select>
-        <input type="text" name="search_text">
+        <input type="text" name="search_variable" value="{{ search_variable }}">
         <!-- sends query to server to fetch active auctions that matches search option -->
-        <input type="button" name="search_btn" value="Search"> <!-- TODO add action -->
+        <input type="submit" name="search_btn" value="Search"> <!-- TODO add action -->
     </form>
-</body>
-</html>
+    {% if results %}
+        <div id="search_results">
+            {% for auction in results %}
+                {% if not forloop.first %}
+                    <br>
+                {% endif %}
+                {% if not auction.banned %}
+                <div id="auction">
+                    <h3><a href="/auction/{{ auction.id }}">{{ auction.name }}</a></h3>
+                    <small>
+                        ID: {{ auction.id }}<br>
+                        Time posted: {{ auction.time }}<br>
+                        <b>Due: </b>{{ auction.due }}
+                    </small>
+                    <div id="auction_text">
+                        {{ auction.description }}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

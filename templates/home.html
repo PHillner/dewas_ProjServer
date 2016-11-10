@@ -2,19 +2,22 @@
 {% block content %}
 <div id="auctions">
     {% for auction in auctions %}
+        {% if not auction.banned %}
         <br>
         <div id="auction">
-            <h2><a href="/auction/{{ auction.id }}">{{ auction.name }}</a></h2>
+            <h3><a href="/auction/{{ auction.id }}">{{ auction.name }}</a></h3>
             <small>
                 ID: {{ auction.id }}<br>
-                Time: {{ auction.time }}<br>
+                Time posted: {{ auction.time }}<br>
+                <b>Due: </b>{{ auction.due }}
             </small>
             <div id="auction_text">
                 {{ auction.description }}
             </div>
         </div>
+        {% endif %}
     {% empty %}
-        Here would be the list of auctions. Sadly, it now is empty.
+        Here would be a list of auctions. Sadly, it now is empty.
     {% endfor %}
 </div>
 {% endblock %}

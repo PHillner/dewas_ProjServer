@@ -1,0 +1,12 @@
+{% block content %}
+    <h2>Confirm new auction</h2>
+    <form method="post" action="/auction/new/">
+    {% csrf_token %}
+    Are you sure you want to create this auction?<br>
+    <input type="submit" name="choice1" value="Yes"><input type="submit" name="choice2" value="No">
+    <input type="hidden" name="name" value="{{ auction.name }}">
+    <input type="hidden" name="description" value="{{ auction.description }}">
+    <input type="hidden" name="priceMin" value="{{ auction.priceMin }}">
+    <input type="hidden" name="dateEnd" value="{{ auction.due }}">
+</form>
+{% endblock %}

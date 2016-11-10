@@ -1,35 +1,7 @@
 {% extends 'template.html' %}
-{% block functions_scripts %}
-    <script>
-        function validateForm() {
-            validity = true;
-            var x = document.forms["edit_user"]["name"];
-            if(x == null || x.length()<50){
-                alert("Name must be filled out and under 50 characters long.");
-                validity = false;
-            }
-            x = document.forms["edit_user"]["description"];
-            if(x == null || x==""){
-                alert("The description is a must. Anything will do.");
-                validity = false;
-            }
-            x = document.forms["edit_user"]["priceMin"];
-            if(x == null || parseFloat(x)==0.0){
-                alert("The item has to have a price greater than zero (0) to be auctioned.");
-                validity = false;
-            }
-            x = document.forms["edit_user"]["dateEnd"];
-            if(x == null || x=="" || int(x)<72){
-                alert("The close time has to be more than 72h.");
-                validity = false;
-            }
-            return validity
-        }
-    </script>
-{% endblock %}
 {% block content %}
-    <h1>New auction</h1>
-    <form method="post" name="details" onsubmit="return validateForm()">
+    <h2>New auction</h2>
+    <form method="post" name="details">
     {% csrf_token %}
         <table>
             <tr>
@@ -41,7 +13,7 @@
                 <td><textarea name="description" rows="5" cols="50" title="Describe your item(s) here.">{{ auction.description }}</textarea></td>
             </tr>
             <tr>
-                <td>Price minimum (X.X) EUR:</td>
+                <td>Price minimum (X.XX) EUR:</td>
                 <td><input type="text" name="priceMin" value="{{ auction.priceMin }}"></td>
             </tr>
             <tr>

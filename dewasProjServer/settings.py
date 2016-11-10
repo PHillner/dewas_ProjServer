@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'AuctionServer',
+    'background_task'
 ]
 
 LOGIN_REDIRECT_URL = 'home'

@@ -1,32 +1,7 @@
 {% extends 'template.html' %}
-{% block functions_scripts %}
-    <script>
-        function validate() {
-            validity = true;
-            var x = document.forms["register"]["userName"];
-            if(x == null || x == "" || x.length() > 30){
-                alert("Username must be filled out and between 0 and 30 (0<x<30) character long");
-                validity = false;
-            }
-            x = document.forms["register"]["email"];
-            if(x == null || x!=""){
-                alert("You need a valid email to be able to have an account.");
-                validity = false;
-            }
-            x = document.forms["register"]["password"];
-            y = document.forms["register"]["password_check"];
-            if(((x != null || x != "") &&(y != null || y != ""))&& x.toString()!=y.toString()){
-                alert("The passwords must match and be other than empty");
-                validity = false;
-                x.value = ""
-                y.value = ""
-            }
-            return validity
-        }
-    </script>
-{% endblock %}
 {% block content %}
 <div id="register">
+    <h2>Register</h2>
     <form method="post" action="/register/" name="register_form">
         {% csrf_token %}
         <table>

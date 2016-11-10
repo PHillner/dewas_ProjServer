@@ -1,17 +1,21 @@
 {% extends 'template.html' %}
 {% block content %}
     <div id="auction_info">
-        <h1>{{ auction.name }}</h1>
+        <h2>{{ auction.name }}</h2>
+        {% if auction.banned %}
+            <b style="color: red">Auction banned!</b><br>
+        {% endif %}
         <small>
             Seller id: {{ auction.seller.id }}<br>
-            Time posted: {{ auction.time }}
+            Time posted: {{ auction.time }}<br>
+            <b>Due: </b>{{ auction.due }}
         </small>
         <p>Description:<br>
             {{ auction.description }}</p>
-        <p id="auction"><b>Base price: </b>{{ auction.priceMin }}<br>
+        <p id="auction"><b>Start price: </b>{{ auction.priceMin|floatformat:2 }}<br>
         <b>Due: </b>{{ auction.due }}</p>
     </div>
-    {% if request.user.is_authenticated and request.user == auction.seller %}
+    {% if request.user.is_authenticated and request.user == auction.seller and not auction.banned %}
         <table>
             <tr>
                 <td>
@@ -27,13 +31,18 @@
             </tr>
         </table>
     {% endif %}
+    {% if request.user.is_superuser and not auction.banned %}
+        <form method="get" action="/auction/{{ auction.id }}/ban/">
+                        <button type="submit" style="background-color: orange">Ban auction</button>
+                    </form>
+    {% endif %}
     <br>
-    {% if request.user.is_authenticated and request.user != auction.seller %}
+    {% if request.user.is_authenticated and request.user != auction.seller and not auction.banned %}
     <form method="post" action="/bid/{{ auction.id }}/">
         {% csrf_token %}
         <table>
             <tr>
-                <td><b>Amount to bid:</b></td>
+                <td><b>Amount to bid (X.XX) EUR:</b></td>
                 <td><input type="text" name="price"></td>
                 <td><input type="submit" value="Bid"></td>
                 <td><input type="hidden" name="next" value="/auction/{{ auction.id }}/"></td>
@@ -44,14 +53,14 @@
     <div id="bids">
         {% for bid in bids %}
             {% if not forloop.first %}
-            <br>
+                <br>
             {% endif %}
             <div id="bid">
-                <b>Bid amount: </b>{{ bid.price }}<br>
+                <b>Bid amount: </b>{{ bid.price|floatformat:2 }}<br>
                 <b>Time: </b>{{ bid.time }}<br>
             </div>
         {% empty %}
-            Here would be the list of bids. Sadly, it now is empty.
+            Here would be a list of bids. Sadly, it now is empty.
         {% endfor %}
     </div>
 {% endblock %}

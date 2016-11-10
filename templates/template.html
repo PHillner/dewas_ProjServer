@@ -22,6 +22,9 @@
                 <button type="submit">New auction</button>
             </form>
         {% endif %}
+        <form method="get" action="/search/">
+            <button type="submit">Search</button>
+        </form>
     </header>
     <div id="info">
         {% if messages %}
@@ -56,6 +59,11 @@
                 <tr>
                     <td><b>Auctions deleted:</b></td>
                     <td>{{ request.session.deleted }}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><b>Auctions created:</b></td>
+                    <td>{{ request.session.bidded }}</td>
                     <td><form method="post" action="/session_stats_reset/">
                         {% csrf_token %}
                         <input type="submit" value="Reset stats">

@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^register/$', register),
     url(r'^auction/(?P<id>\d+)/$', auction),
     url(r'^auction/new/$', auction_new),
+    url(r'^auction/new/confirm$', auction_new),
     url(r'^auction/(?P<id>\d+)/edit/$', auction_edit),
     url(r'^auction/(?P<id>\d+)/delete/$', auction_delete),
     url(r'^bid/(?P<id>\d+)/$', bid, name='bid'),
@@ -32,5 +33,7 @@ urlpatterns = [
     url(r'^user/edit/$', user_edit),
     url(r'^login/$', auth_views.login, name='login'),
     url(r'^logout/$', auth_views.logout, name='logout'),
+    url(r'^search/$', search),
+    url(r'^auction/(?P<id>\d+)/ban/$', ban),
     url(r'^session_stats_reset/$', session_stats_reset),
 ]
