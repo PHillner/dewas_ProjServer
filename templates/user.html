@@ -1,8 +1,8 @@
 {% extends 'template.html' %}
 {% block content %}
-    <h1>User details</h1>
-    ID: {{ user.id }}<br>
+    <h2>User details</h2>
     Username: {{ user.username }}<br>
+    ID: {{ user.id }}<br>
     E-mail: {{ user.email }}<br>
     First name: {{ user.first_name }}<br>
     Last name: {{ user.last_name }}<br>
@@ -13,32 +13,46 @@
     <br>
     <div id="auctions">
     {% for auction in auctions %}
-        <br>
+        {% if not forloop.first %}
+            <br>
+        {% endif %}
         <div id="auction">
-            <h2><a href="/auction/{{ auction.id }}">{{ auction.name }}</a></h2>
+            <h3><a href="/auction/{{ auction.id }}">{{ auction.name }}</a></h3>
+            {% if auction.banned %}
+                <b style="color: red">Auction banned!</b><br>
+            {% endif %}
             <small>
                 ID: {{ auction.id }}<br>
                 Time: {{ auction.time }}<br>
+                <b>Due: </b>{{ auction.due }}
             </small>
             <div id="auction_text">
                 {{ auction.description }}
             </div>
         </div>
     {% empty %}
-        Here would be the list of auctions. Sadly, it now is empty.
+        Here would be a list of auctions. Sadly, it now is empty.
     {% endfor %}
 </div>
     <br>
     <div id="bids">
         {% for bid in bids %}
+            {% if not forloop.first %}
             <br>
-            <div id="bid">
-                <b><a href="/auction/{{ auction.id }}">{{ auction.name }}</a></b>
-                <b>Bid amount: </b>{{ bid.price }}<br>
-                <b>Time: </b>{{ bid.time }}<br>
-            </div>
+            {% endif %}
+            <table id="bid">
+                <tr>
+                    <td><b><a href="/auction/{{ bid.auction.id }}">{{ bid.auction.name }}</a></b></td>
+                </tr>
+                <tr>
+                    <td><b>Bid amount:</b></td><td>{{ bid.price|floatformat:2 }} €</td>
+                </tr>
+                <tr>
+                    <td><b>Time:</b></td><td>{{ bid.time }}</td>
+                </tr>
+            </table>
         {% empty %}
-            Here would be the list of bids. Sadly, it now is empty.
+            Here would be a list of bids. Sadly, it now is empty.
         {% endfor %}
     </div>
 {% endblock %}
